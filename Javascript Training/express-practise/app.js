@@ -2,6 +2,8 @@ var express=require('express');
 var app=express();
 var bodyParser = require('body-parser');
 
+var MongoClient=require('mongodb').MongoClient;
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended:true}));
 
@@ -9,7 +11,6 @@ app.get('/', (req, res) => res.send('Hello World!'));
 
 app.get('/calv1/:num1/:num2',(req,res)=>{
     console.log(req.params);
-
     res.send(`Addition of ${req.params['num1']} and ${req.params['num2']} is ${parseInt(req.params['num1']) + parseInt(req.params['num2'])}`);
 });
 
@@ -36,6 +37,67 @@ app.post('/calv2',(req,res)=>{
 
 
 
-app.listen(3000, () => 
+app.post('/employee',(req,res)=>{
+    console.log(req.body);
+    let emp={
+        "empName":req.body.empName,
+        "empSal":req.body.empSal
+    };
+
+    MongoClient.connect('mongodb://localhost:27017/test',function (err, db) {
+        if(err){
+            throw err;
+        }
+        else{
+            let custRes={       
+            }
+            db.collection('employee').insertOne(emp,function(err,result){
+                if(err){
+                    
+                    custRes={
+                        "status":400,
+                        "error":err
+                    }
+                }
+                else{
+                   custRes={
+                       "status":200,
+                       "result":result
+                   }
+                    
+                }
+
+                res.json(custRes);
+            });
+           
+            //res.send("Database Connected ...!");
+        }
+    });
+   
+});
+
+
+app.get('/employee',(req,res)=>{
+     MongoClient.connect('mongodb://localhost:27017/test',function (err, db) {
+        if(err){
+            throw err;
+        }
+        else{
+           // db.collection('person').find().toArray(function (err, result) {
+            db.collection('employee').find().toArray(function(err,result){
+                
+
+                res.json(result);
+            });
+           
+            //res.send("Database Connected ...!");
+        }
+    });
+   
+});
+
+
+
+app.listen(3001, () => 
 console.log('Example app listening on port 3000!'))
 
